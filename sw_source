@@ -1,7 +1,12 @@
 #!/bin/bash
 ############################################################
-# 列出targetpath下放置的kubeconfig設定檔作為選擇
-# 以變更 KUBECONFIG變數，切換不同K8s Clutser
+# 功能
+# 	列出targetpath下放置的kubeconfig設定檔作為選擇
+# 	以變更 KUBECONFIG變數，切換不同K8s Clutser
+# 佈署步驟
+# cp sw_source ~/bin
+# echo 'alias sw="source ~/bin/sw_source"' >> ~/.bashrc
+# source ~/.bashrc
 ############################################################
 
 
