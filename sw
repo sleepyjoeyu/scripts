@@ -20,15 +20,18 @@ done
 echo "Input select number:"
 read option
 
-if [ $option  -ge $n ];then
-	echo "Wrong options!"
-	exit
-else
-	var=${array["$option"]}
+if [[ $option =~ ^[0-9]+$ ]];then
+        if [ $option -ge $n ];then
+                echo "Out of Scope..."
+                exit
+        fi
+        var=${array["$option"]}
 	export KUBECONFIG="$targetpath/$var"
 	echo "Successlly change KUBECONFIG to $KUBECONFIG"
-
-fi	
+else
+        echo "Please input integer only!!"
+        exit
+fi
 
 
 
