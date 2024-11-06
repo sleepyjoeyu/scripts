@@ -1,0 +1,36 @@
+
+oc extract secret/htpass-secret  -n openshift-config --to=-
+htpasswd -Bb htpasswd joe R3
+oc create secret  generic htpass-secret --from-file=htpasswd --dry-run -o yaml |oc replace -f -
+oc adm policy add-cluster-role-to-user cluster-admin joe
+oc get clusterrolebindings -o json | jq '.items[] | select(.roleRef.name=="cluster-admin")' | jq '.subjects[0].name'
+
+oc get NodeFeatureDiscovery -n openshift-nfd
+oc get clusterpolicy gpu-cluster-policy -o yaml
+oc get node -l feature.node.kubernetes.io/pci-10de.present=true
+oc describe node | egrep 'Roles|pci' | grep -v master
+
+
+
+
+[ check GPU ]
+
+oc get pod -o wide  -n openshift-nfd
+oc get daemonset nfd-worker -n openshift-nfd
+
+oc get clusterpolicy gpu-cluster-policy -o yaml
+
+oc rsh $(oc get pod -n nvidia-gpu-operator |grep driver|awk '{print $1}')
+sh-4.4# nvidia-smi 
+
+
+[ switch login ]
+oc config get-contexts
+oc config use-context openshift-config/api-ocp-metaage-lab:6443/ocpadmin
+
+[ get install config ]
+oc extract cm/cluster-config-v1 -n kube-system --to=-
+
+[ check image registry ]
+oc get -o yaml image.config.openshift/cluster
+oc get route -n openshift-image-registry
