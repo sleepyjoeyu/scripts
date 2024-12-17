@@ -6,6 +6,20 @@ oc extract secret/htpass-secret  -n openshift-config --to=-
 htpasswd -Bb htpasswd joe R3
 for i in $(seq 1 15); do htpasswd -Bb htpasswd user$i redhat; done
 oc create secret  generic htpass-secret --from-file=htpasswd --dry-run -o yaml |oc replace -f -
+
+oc edit oauth cluster 
+spec:
+  identityProviders:
+  - htpasswd:
+      fileData:
+        name: htpass-secret
+    mappingMethod: claim
+    name: demo_htpasswd
+    type: HTPasswd
+
+
+
+[Authorization]
 oc adm policy add-cluster-role-to-user cluster-admin joe
 oc get clusterrolebindings -o json | jq '.items[] | select(.roleRef.name=="cluster-admin")' | jq '.subjects[0].name'
 
