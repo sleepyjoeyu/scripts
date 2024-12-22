@@ -1,0 +1,100 @@
+
+
+function notehelp() {
+
+grep -E ^function ./ocpnote.txt|awk '{print $2}'|sed -r 's/\(|\)//g'|grep -v notehelp
+
+}
+
+function getworkermc() {
+WORKMC=$(oc get mcp |grep worker|awk  '{print $2}')
+oc get mc $WORKMC -o json | jq '{releaseImageVersion:.metadata.annotations["machineconfiguration.openshift.io/release-image-version"], Image:.spec.baseOSExtensionsContainerImage, OSImage:.spec.osImageURL}'
+}
+
+
+function chkmcconfig() {
+
+node=$1
+
+if [ -z  "$node" ];then
+
+	echo "Need node-name!!!"
+else
+	oc get node $node -o yaml |grep Config
+fi
+}
+
+function approvecsr() {
+
+for i in `oc get csr | grep Pending|awk '{print $1}'`;do oc adm certificate approve $i;done
+
+}
+
+function chknoders() {
+
+oc adm top node
+echo  "----------- Resource over 70% --------------"
+oc adm top node |grep --color [7-9][0-9]%
+
+}
+
+function swconfig() {
+
+array=()
+targetpath=~/config
+c=0
+for i in $(ls $targetpath); do 
+	echo "$c - $i" 
+	array+=("$i")
+	c=$[c+1]
+done
+echo "Input select number:"
+read option
+
+if [[ $option =~ ^[0-9]+$ ]];then
+        if [ $option -ge $n ];then
+                echo "Out of Scope..."
+                exit
+        fi
+        var=${array["$option"]}
+	export KUBECONFIG="$targetpath/$var"
+	echo "Successlly change KUBECONFIG to $KUBECONFIG"
+else
+        echo "Please input integer only!!"
+        exit
+fi
+
+
+}
+
+
+function chknodegpu() {
+	oc get node -l feature.node.kubernetes.io/pci-10de.present=true
+
+}
+
+
+function chknodelabel()
+{
+
+if [ -z "$1" ];then
+	oc get node -L nodehealthcheck
+else
+	oc get node -L $1
+fi
+
+}
+
+function chknode() {
+
+if [ "$1" == "worker" ];then
+	oc get node -l node-role.kubernetes.io/worker=
+elif [ "$1" == "master" ];then
+	oc get node -l node-role.kubernetes.io/master=
+else
+	echo "Input worker / master / empty(default)"
+	oc get node
+fi
+
+}
+
