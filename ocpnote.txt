@@ -2,17 +2,36 @@
 
 function notehelp() {
 
-grep -E ^function ./ocpnote.txt|awk '{print $2}'|sed -r 's/\(|\)//g'|grep -v notehelp
+for i in $(grep -E ^function ./ocpnote.txt|awk '{print $2}'|sed -r 's/\(|\)//g'|grep -v notehelp|sort)
+do
+	helpmsg=$(grep $i-help ./ocpnote.txt|awk -F= '{print $2}')
+	#echo "$i-$helpmsg"	
+	printf "%-18s %-10s\n" "$i" "$helpmsg"
 
+done
+}
+
+
+function chknodestorage() {
+#chknodestorage-help="Check node storage space over 60% - if all under the treshold, only node name will be showed"
+
+for i in $(oc get node -o wide |grep -v NAME|awk '{print $6}')
+do
+	ssh core@$i "hostname  && df -h |grep "\/dev" | grep -E  '[6-9][0-9]%'"
+	
+done
 }
 
 function getworkermc() {
+#getworkermc-help="Get the current machine config that the workers applied"
+
 WORKMC=$(oc get mcp |grep worker|awk  '{print $2}')
 oc get mc $WORKMC -o json | jq '{releaseImageVersion:.metadata.annotations["machineconfiguration.openshift.io/release-image-version"], Image:.spec.baseOSExtensionsContainerImage, OSImage:.spec.osImageURL}'
 }
 
 
 function chkmcconfig() {
+#chkmcconfig-help="Check Machine Config: need to specify one node name"
 
 node=$1
 
@@ -26,11 +45,15 @@ fi
 
 function approvecsr() {
 
+#approvecsr-help="Approve all pending CSRs. It may need to execute serveral times."
+
 for i in `oc get csr | grep Pending|awk '{print $1}'`;do oc adm certificate approve $i;done
 
 }
 
 function chknoders() {
+
+#chknoders-help="Check node CPU and Memory resource - highlight if over 70%"
 
 oc adm top node
 echo  "----------- Resource over 70% --------------"
@@ -39,9 +62,13 @@ oc adm top node |grep --color [7-9][0-9]%
 }
 
 function swconfig() {
+#swconfig-help="List all OCP config in path $targetpath"
+
 
 array=()
 targetpath=~/config
+
+
 c=0
 for i in $(ls $targetpath); do 
 	echo "$c - $i" 
@@ -69,13 +96,15 @@ fi
 
 
 function chknodegpu() {
+#chknodegpu-help="List note with GPU resources"
+
 	oc get node -l feature.node.kubernetes.io/pci-10de.present=true
 
 }
 
 
-function chknodelabel()
-{
+function chknodelabel() {
+#chknodelabel-help="List node with specified label (default:nodehealthcheck)"
 
 if [ -z "$1" ];then
 	oc get node -L nodehealthcheck
@@ -86,6 +115,7 @@ fi
 }
 
 function chknode() {
+#chknode-help="List node with specified role: master/worker (Default: show all)"
 
 if [ "$1" == "worker" ];then
 	oc get node -l node-role.kubernetes.io/worker=
