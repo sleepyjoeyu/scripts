@@ -13,7 +13,7 @@ done
 
 
 function chknodestorage() {
-#chknodestorage-help="Check node storage space over 60% - if all under the treshold, only node name will be showed"
+#chknodestorage-help="Need core@ssh enabled - Check node storage space over 60%"
 
 for i in $(oc get node -o wide |grep -v NAME|awk '{print $6}')
 do
