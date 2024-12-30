@@ -128,3 +128,36 @@ fi
 
 }
 
+function toolimgbuild () {
+
+# toolimgbuild-help="Create a tool pod for testing"
+
+oc get is |grep ocpnote-tools
+if [ $? -eq 0 ];then 
+
+	echo ocpnote-toool image exist!!
+	return 1
+fi
+ 
+oc new-build --name=ocpnote-tools  --dockerfile - <<EOF
+	FROM registry.redhat.io/rhel9/support-tools:latest
+    	RUN dnf install -y bind-utils lsof nmap-ncat
+    	CMD ["sleep", "infinity"]
+EOF
+
+}
+
+function toolpod () {
+ 
+#toolpod-help="Deploy a tool pod for testing"
+
+oc get pod |grep ocpnote-tool|grep -v build
+if [ $? -eq 0 ];then 
+
+	echo ocpnote-tool pod exist!!
+	return 1
+fi
+
+toolimage=$(oc get is | grep ocpnote-tools |awk '{print $2}') 
+oc new-app --image=$toolimage --name=ocpnote-tool
+}
