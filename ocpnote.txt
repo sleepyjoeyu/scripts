@@ -128,7 +128,7 @@ fi
 
 }
 
-function toolimgbuild () {
+function toolimgbuild() {
 
 # toolimgbuild-help="Create a tool pod for testing"
 
@@ -147,11 +147,11 @@ EOF
 
 }
 
-function toolpod () {
+function toolpod() {
  
 #toolpod-help="Deploy a tool pod for testing"
 
-oc get pod |grep ocpnote-tool|grep -v build
+oc get pod |grep ocpnote-tools|grep -v build
 if [ $? -eq 0 ];then 
 
 	echo ocpnote-tool pod exist!!
@@ -159,5 +159,5 @@ if [ $? -eq 0 ];then
 fi
 
 toolimage=$(oc get is | grep ocpnote-tools |awk '{print $2}') 
-oc new-app --image=$toolimage --name=ocpnote-tool
+oc new-app --image=$toolimage --name=ocpnote-tools
 }
