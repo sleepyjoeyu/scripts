@@ -1,0 +1,123 @@
+function nodehelp() {
+
+for i in $(grep -E ^function ./nodeinfo.txt|awk '{print $2}'|sed -r 's/\(|\)//g'|grep -Ev 'nodehelp|draw_line'|sort)
+do
+	helpmsg=$(grep $i-help ./nodeinfo.txt|awk -F= '{print $2}') #echo "$i-$helpmsg"	
+	printf "%-18s %-10s\n" "$i" "$helpmsg"
+
+done
+}
+
+function set_hostname() {
+#set_hostname-help="Setup hostname for better identify the node role or function"
+
+echo "Need to setup HOTNAME: y/n"
+read host_answer
+case $host_answer in
+Y|y|Yes|yes)
+	echo "Input your hostname:"
+        read host_name
+	hostnamectl set-hostname $host_name
+	echo "New hostname - $(hostname)"
+	;;
+N|n|No|NO)
+	return
+	;;
+*)
+	echo "Wrong option!!!"
+	return
+	;;
+esac
+
+}
+
+function set_ip() {
+#set_ip-help="Setup IP on specific nic device"
+
+echo "Need to setup IP: y/n"
+read ip_answer
+
+case $ip_answer in
+Y|y|Yes|yes)
+	echo "Input your IP (default prefix: /24)"
+	read ip_addr
+	echo "Input your nic device"
+	read nic_dev
+	ip a add $ip_addr/24 dev $nic_dev
+	echo "CMD=ip a add $ip_addr/24 dev $nic_dev"
+	ip a l dev $nic_dev
+	;;
+N|n|No|NO)
+	return
+	;;
+*)
+	echo "Wrong option!!!"
+	return
+	;;
+esac
+
+}
+
+function get_mac {
+#get_mac-help="Get mac list for each ethernet nic"
+
+nic_file="/tmp/nic_file_$$"
+nic=$(nmcli d |grep "ethernet " > $nic_file)
+echo $(hostname)
+for i in `cat $nic_file|awk '{print $1}'`;
+do 
+	echo "$i: `ip a show dev $i|grep "link/ether"|awk '{print $2}'`"; 
+done
+rm -rf $nic_file
+
+}
+
+function draw_line() {
+echo "------------------------------------------------------------------------------------"
+
+}
+
+function get_machine() {
+#get_machine-help="Get machine hardware and nic mac  list"
+
+nic1_file="/tmp/nic1_file_$$"
+hostname
+draw_line
+
+dmidecode -t baseboard |grep -Ei 'Manufacturer|Product|Serial'
+draw_line
+
+lscpu  |grep -Ei '^on-line|^Model\ Name'
+draw_line
+
+free -h
+draw_line
+
+lsblk -io KNAME,TYPE,SIZE,MODEL|grep -Eiv 'loop[0-9]+|^dm-'
+draw_line
+
+nmcli d |grep "ethernet " > $nic1_file
+for i in `cat $nic1_file|awk '{print $1}'`;do ip a show dev $i; done
+draw_line
+
+rm -rf $nic1_file
+}
+
+function set_machine() {
+#set_machine-help="Setup hostanme + IP"
+
+set_hostname
+set_ip
+
+}
+
+function collect_machine() {
+#collect_machine-help="get_machine+get_mac, then save to /tmp/{hostname}_get_mac*.txt "
+
+thost=$(hostname)
+get_machine > "/tmp/${thost}_get_machine.txt"
+get_mac >  "/tmp/${thost}_get_mac.txt"
+
+}
+
+
