@@ -79,7 +79,7 @@ echo "Input select number:"
 read option
 
 if [[ $option =~ ^[0-9]+$ ]];then
-        if [ $option -ge $n ];then
+        if [ $option -ge $c ];then
                 echo "Out of Scope..."
                 exit
         fi
