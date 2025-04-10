@@ -158,6 +158,8 @@ if [ $? -eq 0 ];then
 	return 1
 fi
 
-toolimage=$(oc get is | grep ocpnote-tools |awk '{print $2}') 
-oc new-app --image=$toolimage --name=ocpnote-tools
+toolimage=$(oc get is | grep ocpnote-tools |awk '{print $1}') 
+#toolimage=$(oc get is | grep ocpnote-tools |awk '{print $2}') 
+oc new-app -i $toolimage --name=ocpnote-tools
+#oc new-app --image=$toolimage --name=ocpnote-tools
 }
